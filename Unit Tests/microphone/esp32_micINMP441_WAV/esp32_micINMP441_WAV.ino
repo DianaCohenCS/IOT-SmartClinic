@@ -22,9 +22,6 @@ Test scenario:
   5. Download the recording.wav file to your computer, and listen to audio for “debugging”.
 */
 
-#define FS_TYPE SPIFFS  // declare another type for testing, e.g. LittleFS
-//#define FS_TYPE LittleFS // ERROR: 'LittleFS' was not declared in this scope
-#define FS_FORMAT false   // You only need to format the filesystem once
 #define MONITORING false  // set true to print for debugging
 
 #include <esp_task_wdt.h>

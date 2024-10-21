@@ -17,8 +17,6 @@ Test scenario:
   3. Play the WAV file from the local FS.
 */
 
-#define FS_TYPE SPIFFS
-
 #include <fsFLASH.h>  // from Diana-audio-utils
 #include <audioSTD.h> // from Diana-audio-utils
 

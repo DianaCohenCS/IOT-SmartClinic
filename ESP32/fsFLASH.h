@@ -2,6 +2,7 @@
 //#include <Arduino.h>
 
 // TODO: need to test the code for both the libraries
+#include "fsDEFS.h"
 
 // use SPIFFS by default or LittleFS of your choice
 #ifndef FS_TYPE
