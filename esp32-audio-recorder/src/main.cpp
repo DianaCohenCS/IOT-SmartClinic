@@ -36,7 +36,10 @@ Test scenario:
 // our definitions and wrappers from Diana-audio-utils
 #include "secrets.h"
 
+// Set LED GPIO
 #define BUILTIN_LED 2
+// Stores LED state
+String ledState;
 
 // Replace with your network credentials, defined in secrets.h
 // const char* ssid = "REPLACE_WITH_YOUR_SSID";
@@ -47,8 +50,8 @@ const char *password = WIFI_PASSWORD;
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
 
-// // put function declarations here:
-// int myFunction(int, int);
+// put function declarations here:
+String processor(const String &);
 
 void setup()
 {
@@ -57,6 +60,17 @@ void setup()
   // Serial port for debugging purposes
   Serial.begin(115200);
   Serial.println("Booted");
+
+  // HW SETUP
+  pinMode(BUILTIN_LED, OUTPUT);
+
+  // FS INIT
+  if (!SPIFFS.begin(true)) // Initialize SPIFFS
+  {
+    Serial.println("An Error has occurred while mounting SPIFFS");
+    return;
+  }
+  Serial.println("SPIFFS mounted");
 
   // WIFI INIT
   Serial.print("Connecting to ");
@@ -80,14 +94,8 @@ void setup()
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
 
-  // FS INIT
-  SPIFFS.begin();
-
   // DNS INIT
   MDNS.begin("demo-server");
-
-  // HW SETUP
-  pinMode(BUILTIN_LED, OUTPUT);
 
   // WEB SERVER SETUP
 
@@ -112,13 +120,32 @@ void setup()
     }
     request->send(200, "OK"); })); // don't forget to send the response
 
-  // serve content from SPIFFS
-  server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
+  // // serve content from SPIFFS
+  // server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
+
+  // Route for root / web page, using processor() to read the led state
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(SPIFFS, "/index.html", String(), false, processor); });
+
+  // Route to load style.css file
+  server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(SPIFFS, "/style.css", "text/css"); });
 
   // Route to load script.js file
   server.on("/script.js", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(SPIFFS, "/script.js", "application/javascript"); });
+
+  // Route to set GPIO to HIGH
+  server.on("/on", HTTP_GET, [](AsyncWebServerRequest *request)
             {
-    request->send(SPIFFS, "/script.js", "application/javascript"); });
+    digitalWrite(BUILTIN_LED, HIGH);
+    request->send(SPIFFS, "/index.html", String(), false, processor); });
+
+  // Route to set GPIO to LOW
+  server.on("/off", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
+    digitalWrite(BUILTIN_LED, LOW);
+    request->send(SPIFFS, "/index.html", String(), false, processor); });
 
   // handle not found, except for OPTIONS request
   server.onNotFound([](AsyncWebServerRequest *request)
@@ -143,8 +170,24 @@ void loop()
   // put your main code here, to run repeatedly:
 }
 
-// // put function definitions here:
-// int myFunction(int x, int y)
-// {
-//   return x + y;
-// }
+// put function definitions here:
+
+// Replaces placeholder with LED state value
+String processor(const String &var)
+{
+  Serial.printf("%s: ", var);
+  if (var == "STATE")
+  {
+    if (digitalRead(BUILTIN_LED))
+    {
+      ledState = "ON";
+    }
+    else
+    {
+      ledState = "OFF";
+    }
+    Serial.println(ledState);
+    return ledState;
+  }
+  return String();
+}
