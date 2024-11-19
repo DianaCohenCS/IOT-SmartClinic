@@ -325,13 +325,14 @@ bool fsEnsureWavHeader(File file, WAVHeader *wavHeader = NULL)
     return false;
   }
 
-  // Check audio format (should be PCM)
-  int audioFormat = header[20] | (header[21] << 8);
-  if (audioFormat != 1)
-  {
-    Serial.println("Unsupported WAV format");
-    return false;
-  }
+  // This caused some troubles with playing pcm32bit_44k.wav, hence comment this out...
+  // // Check audio format (should be PCM)
+  // int audioFormat = header[20] | (header[21] << 8);
+  // if (audioFormat != 1)
+  // {
+  //   Serial.println("Unsupported WAV format");
+  //   return false;
+  // }
 
   // Check number of channels (should be 1 or 2)
   int numChannels = header[22] | (header[23] << 8);
