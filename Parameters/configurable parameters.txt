@@ -1,1 +1,106 @@
-The parameters are at the top of the ESP32 code
+The parameters are at the top of the ESP32 code:
+
+==================================================
+audioWIRE.h:
+==================================================
+// define microphone pins (input)
+#define MIC_I2S_SD 25
+#define MIC_I2S_SCK 33
+#define MIC_I2S_WS 32
+
+// Use I2S processor 0 for receiver
+#define MIC_I2S_PORT I2S_NUM_0
+#define MIC_CHANNEL_FMT I2S_CHANNEL_FMT_ONLY_LEFT
+
+// define DAC pins (output via speakers)
+#define DAC_DIN_SD 14
+#define DAC_BCLK_SCK 27
+#define DAC_LRC_WS 26
+
+// Use I2S processor 0 for transmitter
+#define DAC_I2S_PORT I2S_NUM_0
+#define DAC_CHANNEL_FMT I2S_CHANNEL_FMT_ONLY_LEFT
+
+#define MIC_SAMPLE_RATE (16000) // 16kHz | 44100
+#define MIC_SAMPLE_BITS (16)    // 32 or 16 bits for bit depth // 32-bit doesn't work for me :(
+#define MIC_SAMPLE_BITS_HDR (16)    // 16 bits for bit depth for wav header of output file
+#define MIC_CHANNEL_NUM (1)     // one channel
+
+// Increase these values if you experience distortion at higher sample rates
+#define DMA_BUF_COUNT (8) // 64
+#define DMA_BUF_LEN (256)  // 64; 1024
+
+#define BUFF_SIZE (DMA_BUF_LEN * MIC_SAMPLE_BITS / 8) // size of buffer in bytes
+
+==================================================
+fsDEFS.h  - define basics
+==================================================
+#define USE_LITTLE false
+
+#define FS_TYPE SPIFFS  // declare another type for testing, e.g. LittleFS
+#define FS_FORMAT false   // You only need to format the filesystem once
+#define MONITORING false  // set true to print for debugging
+
+==================================================
+fsFLASH.h - implement basics from fsDEFS.h
+==================================================
+// use SPIFFS by default or LittleFS of your choice
+#ifndef USE_LITTLE
+#define USE_LITTLE false
+#endif
+
+#if USE_LITTLE == false
+#include <SPIFFS.h>
+#define FS_TYPE SPIFFS
+#else
+#include <LittleFS.h>
+#define FS_TYPE LittleFS
+#endif
+
+// You only need to format the filesystem once
+#ifndef FS_FORMAT
+#define FS_FORMAT false
+#endif
+
+==================================================
+main.cpp
+==================================================
+#define LED LED_BUILTIN // turn on when busy, and off otherwise
+
+// Microphone task definitions
+#define MIC_I2S_TASK_STACK (4 * 1024) // The size of the stack on this TASK is 4096 = 1024*4
+#define MIC_I2S_TASK_PRIORITY (1)     // Keep the priority 5 for now.
+#define DAC_I2S_TASK_STACK (4 * 1024)
+#define DAC_I2S_TASK_PRIORITY (1)
+
+File file_out;        // holds the recent uploaded file
+int record_time = 20; // seconds (defaulf)
+
+// File path can be 31 characters maximum in SPIFFS
+String audio_dir = "/";
+String filename_out = audio_dir + "recording.wav";
+String filename_in = audio_dir + "recording_spiffs.wav";
+
+// Replace with your network credentials, defined in ***secrets.h***
+// #define EAP_WIFI false // WPA didn't work for me, so I created a hotspot
+// const char *ssid_eap = EAP_SSID;
+const char *ssid = WIFI_SSID;
+const char *password = WIFI_PASSWORD;
+
+const char *host = "audio-recorder"; // then browse http://audio-recorder.local/
+
+==================================================
+platformio.ini
+==================================================
+[env:esp32doit-devkit-v1]
+platform = espressif32
+board = esp32doit-devkit-v1
+framework = arduino
+;board_build.filesystem = littlefs ; this didn't work for me :( just use SPIFFS
+monitor_speed = 115200
+upload_speed = 115200
+lib_deps = 
+	me-no-dev/ESP Async WebServer@^1.2.4
+	bblanchon/ArduinoJson@^7.2.0
+
+==================================================
