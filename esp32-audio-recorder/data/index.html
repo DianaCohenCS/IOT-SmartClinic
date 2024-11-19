@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" type="text/css" href="style.css" />
+
+    <!-- download now but execute later, after the static HTML is rendered-->
+    <script defer type="text/javascript" src="script.js"></script>
+    
+    <title>ESP32 Audio Recorder</title>
+</head>
+
+<body>
+    <h1>ESP32 Audio Recorder</h1>
+    <div class="container">
+        <div>
+            <h2>Add new audio</h2>
+        </div>
+        <div class="note">
+            <span>* We support .wav and .mp3 files.</span>
+        </div>
+        <div>
+            <!-- <form id="upload-form" method="post" enctype="multipart/form-data" action="/upload"> -->
+            <!-- We use javascript to perform an /upload -->
+            <form id="upload-form" method="post" enctype="multipart/form-data">
+                <input type="file" id="uploads" name="uploads" accept=".wav,.mp3" required multiple />
+                <input type="submit" id="submit-form" value="Upload" disabled />
+            </form>
+        </div>
+
+        <div>
+            <select name="record-select" id="record-select">
+                <option value="0" selected disabled>-- Select record time --</option>
+                <option value="10">10 sec</option>
+                <option value="15">15 sec</option>
+                <option value="20">20 sec</option>
+            </select>
+            <button id="record-button" onclick="startRecording()" disabled>Start Recording</button>
+        </div>
+        <!-- Generate the content dynamically -->
+        <div id="fs-space"></div>
+    </div>
+    <div class="play-container" id="play-container" style="display: none;">
+        <div>
+            <h2>Play the audio</h2>
+        </div>
+        <div class="note">
+            <span>* We only support WAV files to Play on ESP.</span>
+        </div>
+        <div>
+            <select name="list-select" id="list-select">
+                <option value="" selected disabled>-- Select audio file --</option>
+                <!-- Generate the <option> elements dynamically -->
+            </select>
+            <button id="play-button" disabled onclick="playAudio()">Play on ESP</button>
+            <button id="delete-button" disabled onclick="deleteAudio()">Delete from FS</button>
+            <!-- <div id="status"></div> -->
+        </div>
+
+        <div>
+            <!-- Use this element to play an audio within the browser -->
+            <audio id="play-browser" controls>Play within the browser</audio>
+        </div>
+        <div>
+            <table id="list-table">
+                <tr>
+                    <th>Name</th>
+                    <th>Size</th>
+                </tr>
+                <!-- Generate the data rows dynamically -->
+            </table>
+        </div>
+    </div>
+</body>
+
+</html>
