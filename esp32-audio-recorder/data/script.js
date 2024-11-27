@@ -248,7 +248,7 @@ async function waitForReady() {
         }
         ready = await checkPlaybackStatus();
         if (!ready)
-            await sleep(5000); // wait for 5 seconds before next try
+            await sleep(10000); // wait for 10 seconds before next try
     }
     // ready now...
     setPlaying(false);
